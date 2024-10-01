@@ -2,6 +2,7 @@ import React from 'react';
 import MIDIHandler from './components/MIDIHandler';
 import PianoKeysProjection from './components/PianoKeysProjection';
 import MusicSheetProjection from './components/MusicSheetProjection';
+import PlayNoteButton from './components/PlayNoteButton';
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
       <MIDIHandler />
       <PianoKeysProjection />
       <MusicSheetProjection />
+      <PlayNoteButton />
     </div>
   );
 }
