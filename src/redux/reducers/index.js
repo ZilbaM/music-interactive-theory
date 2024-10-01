@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import pianoReducer from './pianoReducer';
+import pianoReducer from '../slices/pianoSlice';
 
 const rootReducer = combineReducers({
   piano: pianoReducer,
