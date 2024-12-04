@@ -16,6 +16,8 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'no-console': 'warn',
     'default-param-last': 'off',
+    'react/prop-types': 'off',
+    'no-nested-ternary': 'off',
     // Add or adjust rules as needed
   },
   overrides: [
