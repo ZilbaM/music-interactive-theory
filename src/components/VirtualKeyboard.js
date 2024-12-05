@@ -4,6 +4,7 @@ import styled from 'styled-components';
 
 const KeyboardContainer = styled.div`
   display: flex;
+  height: 100px;
   justify-content: center;
   align-items: flex-end;
   margin-top: 20px;
@@ -14,8 +15,8 @@ const Key = styled.div`
   height: ${({ isBlack }) => (isBlack ? '60px' : '100px')};
   background-color: ${({ isActive, isBlack }) =>
     isActive ? 'orange' : isBlack ? 'black' : 'white'};
-  border: 1px solid #333;
-  margin: ${({ isBlack }) => (isBlack ? '0 -10px' : '0')};
+  border: 1px solid grey;
+  margin: ${({ isBlack }) => (isBlack ? '40px -10px' : '0')};
   z-index: ${({ isBlack }) => (isBlack ? '1' : '0')};
   position: ${({ isBlack }) => (isBlack ? 'relative' : 'static')};
 `;

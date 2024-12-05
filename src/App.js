@@ -4,6 +4,7 @@ import { MIDIProvider } from './Context/MIDIContext';
 import Calibration from './Components/Calibration';
 import NoteNotationLesson from './Lessons/NoteNotationLesson';
 import VirtualKeyboard from './Components/VirtualKeyboard';
+import PerspectiveTransform from './Components/PerspectiveTransform';
 
 function App() {
   const [calibrationData, setCalibrationData] = useState(null);
@@ -23,11 +24,13 @@ function App() {
             calibrationData={calibrationData}
             setActiveNotes={setActiveNotes}
           />
-          <VirtualKeyboard
-            firstNote={calibrationData.firstNote}
-            lastNote={calibrationData.lastNote}
-            activeNotes={activeNotes}
-          />
+          <PerspectiveTransform>
+            <VirtualKeyboard
+              firstNote={calibrationData.firstNote}
+              lastNote={calibrationData.lastNote}
+              activeNotes={activeNotes}
+            />
+          </PerspectiveTransform>
         </>
       )}
     </MIDIProvider>
