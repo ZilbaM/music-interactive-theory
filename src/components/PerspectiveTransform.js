@@ -1,4 +1,4 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
 import styled from 'styled-components';
 
 const PerspectiveContainer = styled.div`
@@ -16,7 +16,7 @@ const ControlPoint = styled.div`
   transform: translate(-50%, -50%);
 `;
 
-const PerspectiveTransform = ({ children }) => {
+function PerspectiveTransform({ children }) {
   const containerRef = useRef(null);
   const [points, setPoints] = useState({
     topLeft: { x: 0, y: 0 },
@@ -26,6 +26,128 @@ const PerspectiveTransform = ({ children }) => {
   });
   const [matrix, setMatrix] = useState('');
   const [editable, setEditable] = useState(false); // Editable state
+
+  // Function to compute the CSS matrix
+  function computeCssMatrix(srcPoints, dstPoints) {
+    function solve(A, b) {
+      // Solve A * x = b
+      const det =
+        A[0] * (A[4] * A[8] - A[5] * A[7]) -
+        A[1] * (A[3] * A[8] - A[5] * A[6]) +
+        A[2] * (A[3] * A[7] - A[4] * A[6]);
+
+      if (det === 0) return null;
+
+      const invDet = 1 / det;
+
+      const adjA = [
+        A[4] * A[8] - A[5] * A[7],
+        A[2] * A[7] - A[1] * A[8],
+        A[1] * A[5] - A[2] * A[4],
+        A[5] * A[6] - A[3] * A[8],
+        A[0] * A[8] - A[2] * A[6],
+        A[2] * A[3] - A[0] * A[5],
+        A[3] * A[7] - A[4] * A[6],
+        A[1] * A[6] - A[0] * A[7],
+        A[0] * A[4] - A[1] * A[3],
+      ].map((val) => val * invDet);
+
+      return [
+        adjA[0] * b[0] + adjA[1] * b[1] + adjA[2] * b[2],
+        adjA[3] * b[0] + adjA[4] * b[1] + adjA[5] * b[2],
+        adjA[6] * b[0] + adjA[7] * b[1] + adjA[8] * b[2],
+      ];
+    }
+
+    function adj(m) {
+      return [
+        m[4] * m[8] - m[5] * m[7],
+        m[2] * m[7] - m[1] * m[8],
+        m[1] * m[5] - m[2] * m[4],
+        m[5] * m[6] - m[3] * m[8],
+        m[0] * m[8] - m[2] * m[6],
+        m[2] * m[3] - m[0] * m[5],
+        m[3] * m[7] - m[4] * m[6],
+        m[1] * m[6] - m[0] * m[7],
+        m[0] * m[4] - m[1] * m[3],
+      ];
+    }
+
+    function multmm(a, b) {
+      const c = [];
+      for (let i = 0; i < 3; i += 1) {
+        for (let j = 0; j < 3; j += 1) {
+          let cij = 0;
+          for (let k = 0; k < 3; k += 1) {
+            cij += a[3 * i + k] * b[3 * k + j];
+          }
+          c[3 * i + j] = cij;
+        }
+      }
+      return c;
+    }
+
+    function basisToPoints(p1, p2, p3, p4) {
+      const m = [p1.x, p2.x, p3.x, p1.y, p2.y, p3.y, 1, 1, 1];
+      const v = [p4.x, p4.y, 1];
+      const s = solve(m, v);
+      if (s === null) return null;
+      const m2 = [
+        m[0] * s[0],
+        m[1] * s[1],
+        m[2] * s[2],
+        m[3] * s[0],
+        m[4] * s[1],
+        m[5] * s[2],
+        m[6] * s[0],
+        m[7] * s[1],
+        m[8] * s[2],
+      ];
+      return m2;
+    }
+
+    const m1 = basisToPoints(
+      srcPoints[0],
+      srcPoints[1],
+      srcPoints[2],
+      srcPoints[3]
+    );
+    const m2 = basisToPoints(
+      dstPoints[0],
+      dstPoints[1],
+      dstPoints[2],
+      dstPoints[3]
+    );
+    if (m1 === null || m2 === null) return '';
+
+    const m3 = multmm(m2, adj(m1));
+
+    // Normalize the matrix
+    for (let i = 0; i < m3.length; i += 1) {
+      m3[i] /= m3[8];
+    }
+
+    const matrix3d = [
+      m3[0],
+      m3[3],
+      0,
+      m3[6],
+      m3[1],
+      m3[4],
+      0,
+      m3[7],
+      0,
+      0,
+      1,
+      0,
+      m3[2],
+      m3[5],
+      0,
+      m3[8],
+    ];
+
+    return `matrix3d(${matrix3d.join(',')})`;
+  }
 
   // Use useLayoutEffect to ensure the DOM is ready
   useLayoutEffect(() => {
@@ -92,7 +214,7 @@ const PerspectiveTransform = ({ children }) => {
   };
 
   // Toggle editable state with Shift+P
-  React.useEffect(() => {
+  useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.shiftKey && (e.key === 'p' || e.key === 'P')) {
         setEditable((prevEditable) => !prevEditable);
@@ -103,103 +225,6 @@ const PerspectiveTransform = ({ children }) => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
-
-  function computeCssMatrix(srcPoints, dstPoints) {
-    function adj(m) {
-      return [
-        m[4] * m[8] - m[5] * m[7],
-        m[2] * m[7] - m[1] * m[8],
-        m[1] * m[5] - m[2] * m[4],
-        m[5] * m[6] - m[3] * m[8],
-        m[0] * m[8] - m[2] * m[6],
-        m[2] * m[3] - m[0] * m[5],
-        m[3] * m[7] - m[4] * m[6],
-        m[1] * m[6] - m[0] * m[7],
-        m[0] * m[4] - m[1] * m[3],
-      ];
-    }
-
-    function multmm(a, b) {
-      var c = [];
-      for (var i = 0; i < 3; i++) {
-        for (var j = 0; j < 3; j++) {
-          var cij = 0;
-          for (var k = 0; k < 3; k++) {
-            cij += a[3 * i + k] * b[3 * k + j];
-          }
-          c[3 * i + j] = cij;
-        }
-      }
-      return c;
-    }
-
-    function basisToPoints(p1, p2, p3, p4) {
-      var m = [
-        p1.x, p2.x, p3.x,
-        p1.y, p2.y, p3.y,
-        1, 1, 1,
-      ];
-      var v = [p4.x, p4.y, 1];
-      var s = solve(m, v);
-      if (s === null) return null;
-      var m2 = [
-        m[0] * s[0], m[1] * s[1], m[2] * s[2],
-        m[3] * s[0], m[4] * s[1], m[5] * s[2],
-        m[6] * s[0], m[7] * s[1], m[8] * s[2],
-      ];
-      return m2;
-    }
-
-    function solve(A, b) {
-      // Solve A * x = b
-      var det =
-        A[0] * (A[4] * A[8] - A[5] * A[7]) -
-        A[1] * (A[3] * A[8] - A[5] * A[6]) +
-        A[2] * (A[3] * A[7] - A[4] * A[6]);
-
-      if (det === 0) return null;
-
-      var invDet = 1 / det;
-
-      var adjA = [
-        (A[4] * A[8] - A[5] * A[7]) * invDet,
-        (A[2] * A[7] - A[1] * A[8]) * invDet,
-        (A[1] * A[5] - A[2] * A[4]) * invDet,
-        (A[5] * A[6] - A[3] * A[8]) * invDet,
-        (A[0] * A[8] - A[2] * A[6]) * invDet,
-        (A[2] * A[3] - A[0] * A[5]) * invDet,
-        (A[3] * A[7] - A[4] * A[6]) * invDet,
-        (A[1] * A[6] - A[0] * A[7]) * invDet,
-        (A[0] * A[4] - A[1] * A[3]) * invDet,
-      ];
-
-      return [
-        adjA[0] * b[0] + adjA[1] * b[1] + adjA[2] * b[2],
-        adjA[3] * b[0] + adjA[4] * b[1] + adjA[5] * b[2],
-        adjA[6] * b[0] + adjA[7] * b[1] + adjA[8] * b[2],
-      ];
-    }
-
-    var m1 = basisToPoints(srcPoints[0], srcPoints[1], srcPoints[2], srcPoints[3]);
-    var m2 = basisToPoints(dstPoints[0], dstPoints[1], dstPoints[2], dstPoints[3]);
-    if (m1 === null || m2 === null) return '';
-
-    var m3 = multmm(m2, adj(m1));
-
-    // Normalize the matrix
-    for (var i = 0; i < m3.length; i++) {
-      m3[i] = m3[i] / m3[8];
-    }
-
-    var matrix3d = [
-      m3[0], m3[3], 0, m3[6],
-      m3[1], m3[4], 0, m3[7],
-      0, 0, 1, 0,
-      m3[2], m3[5], 0, m3[8],
-    ];
-
-    return 'matrix3d(' + matrix3d.join(',') + ')';
-  }
 
   return (
     <PerspectiveContainer ref={containerRef}>
@@ -224,6 +249,6 @@ const PerspectiveTransform = ({ children }) => {
         ))}
     </PerspectiveContainer>
   );
-};
+}
 
 export default PerspectiveTransform;

@@ -116,7 +116,7 @@ This project is a work in progress. Below is the roadmap with milestones to trac
 
 - [x] **MIDI Communication**
   - Implement code to read MIDI input and send MIDI output using WebMidi.js.
-- [ ] **Basic Projection Mapping**
+- [x] **Basic Projection Mapping**
   - Develop simple projections onto piano keys.
   - Display static note labels.
 
