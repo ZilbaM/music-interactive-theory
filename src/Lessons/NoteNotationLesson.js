@@ -39,9 +39,9 @@ function NoteNotationLesson({ calibrationData }) {
     }
   };
   const stepSettings = [
-    { autoAdvance: true }, // Here you can choose if you want to have the loading bar or not
+    { autoAdvance: false }, // Here you can choose if you want to have the loading bar or not
     { autoAdvance: false },
-    { autoAdvance: false },
+    { autoAdvance: true },
   ];
   const currentSettings = stepSettings[currentStep] || { autoAdvance: false }; // here if there are no stepSetting for the current step its set to false
 
