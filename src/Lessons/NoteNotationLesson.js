@@ -18,15 +18,42 @@ function NoteNotationLesson({ calibrationData }) {
   let timer = null;
 
   const steps = [
-    <Text key="step1">
-      Welcome to the Note Notation Lesson! Press the highest key to proceed.
-    </Text>,
-    <Text key="step2">
-      This is the note C. Find and press the C note on your piano.
-    </Text>,
-    <Text key="step3">Great job! You&apos;ve found the C note.</Text>,
-    <Text key="step4">The end of the lesson.</Text>,
+    {
+      content: (
+        <Text key="step1">
+          Welcome to the Note Notation Lesson! Press the highest key to proceed.
+        </Text>
+      ),
+      settings: {
+        autoAdvance: false,
+      },
+    },
+    {
+      content: (
+        <Text key="step2">
+          This is the note C. Find and press the C note on your piano.
+        </Text>
+      ),
+      settings: {
+        autoAdvance: false,
+      },
+    },
+    {
+      content: (
+        <Text key="step3">Great job! You&apos;ve found the C note.</Text>
+      ),
+      settings: {
+        autoAdvance: true,
+      },
+    },
+    {
+      content: <Text key="step4">The end of the lesson</Text>,
+      settings: {
+        autoAdvance: false,
+      },
+    },
   ];
+
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep((prev) => prev + 1);
@@ -38,15 +65,9 @@ function NoteNotationLesson({ calibrationData }) {
       setCurrentStep((prev) => prev - 1);
     }
   };
-  const stepSettings = [
-    { autoAdvance: false }, // Here you can choose if you want to have the loading bar or not
-    { autoAdvance: false },
-    { autoAdvance: true },
-  ];
-  const currentSettings = stepSettings[currentStep] || { autoAdvance: false }; // here if there are no stepSetting for the current step its set to false
 
   const startTimer = () => {
-    if (!currentSettings.autoAdvance) return; // no timer is set if autoAdvance is false
+    if (!steps[currentStep].settings.autoAdvance) return; // no timer is set if autoAdvance is false
 
     let timeElapsed = 0;
     timer = setInterval(() => {
@@ -104,8 +125,8 @@ function NoteNotationLesson({ calibrationData }) {
 
   return (
     <Container>
-      {steps[currentStep]}
-      {currentSettings.autoAdvance && (
+      {steps[currentStep].content}
+      {steps[currentStep].settings.autoAdvance && (
         <LoadingBar progress={progress} color="#4caf50" />
       )}
     </Container>
