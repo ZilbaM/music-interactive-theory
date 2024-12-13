@@ -37,6 +37,17 @@ export function MIDIProvider({ children }) {
       });
   }, []);
 
+  const playNote = (note, attackSpeed, duration, channel) => {
+    const output = outputs[0]; // Use first output as default
+    output.sendNoteOn(note, { attackSpeed, channel });
+
+    if (duration !== null) {
+      setTimeout(() => {
+        output.sendNoteOff(note, { channel });
+      }, duration);
+    }
+  };
+
   // Provide methods to add and remove event listeners
   const addMidiListener = (type, channel, listener) => {
     inputs.forEach((input) => {
@@ -58,6 +69,7 @@ export function MIDIProvider({ children }) {
       isWebMidiEnabled,
       addMidiListener,
       removeMidiListener,
+      playNote,
     }),
     [inputs, outputs, isWebMidiEnabled]
   );
