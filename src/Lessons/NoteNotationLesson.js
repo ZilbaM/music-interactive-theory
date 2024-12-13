@@ -1,5 +1,6 @@
 // src/Lessons/NoteNotationLesson.js
 import React, { useEffect, useState, useContext } from 'react';
+import { Note } from 'tonal';
 import { MIDIContext } from '../Context/MIDIContext';
 import Container from '../Components/UI/Container';
 import Text from '../Components/UI/Text';
@@ -12,6 +13,7 @@ function NoteNotationLesson({ calibrationData }) {
   const nextKey = lastNote; // Highest key as Next
   const [currentStep, setCurrentStep] = useState(0);
   const [activeNotes, setActiveNotes] = useState([]);
+  const [noteCount, setNoteCount] = useState({});
 
   const steps = [
     <Text key="step1">
@@ -35,7 +37,27 @@ function NoteNotationLesson({ calibrationData }) {
     }
   };
 
-  const isNoteC = (noteNumber) => noteNumber % 12 === 0;
+  const updateNoteCount = (note) => {
+    setNoteCount((prevCounts) => {
+      const updatedCounts = { ...prevCounts };
+      updatedCounts[note] = (updatedCounts[note] || 0) + 1;
+      return updatedCounts;
+    });
+  };
+
+  const isNote = (noteNumber, toCompare) =>
+    Note.chroma(Note.fromMidi(noteNumber)) === Note.get(toCompare).letter;
+
+  const PlaygroundCompareNote = (event) => {
+    const note = event.note.number;
+
+    if (currentStep === 2 && isNote(note, 'C')) {
+      updateNoteCount('C');
+      if ((noteCount.C || 0) + 1 >= 4) {
+        handleNext();
+      }
+    }
+  };
 
   useEffect(() => {
     const handleNoteOn = (event) => {
@@ -48,11 +70,7 @@ function NoteNotationLesson({ calibrationData }) {
       } else {
         // Handle musical input
         setActiveNotes((prev) => [...prev, note]);
-
-        // For specific steps, check if the correct note is played
-        if (currentStep === 1 && isNoteC(note)) {
-          setCurrentStep((prev) => prev + 1);
-        }
+        PlaygroundCompareNote();
       }
     };
 
