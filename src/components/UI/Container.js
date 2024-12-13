@@ -6,6 +6,10 @@ const Container = styled.div`
   margin: 0 auto;
   padding: ${({ padding }) => padding || '20px'};
   text-align: ${({ align }) => align || 'center'};
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 
 export default Container;

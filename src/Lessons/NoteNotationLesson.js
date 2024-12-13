@@ -4,60 +4,147 @@ import styled from 'styled-components';
 import { MIDIContext } from '../Context/MIDIContext';
 import Container from '../Components/UI/Container';
 import Text from '../Components/UI/Text';
-import LoadingBar from '../Components/UI/LoadingBar';
+
+const noteLetters = [
+  'C',
+  'C#',
+  'D',
+  'D#',
+  'E',
+  'F',
+  'F#',
+  'G',
+  'G#',
+  'A',
+  'A#',
+  'B',
+];
+const getNoteName = (noteNumber) => {
+  const mod = noteNumber % 12;
+  return noteLetters[mod];
+};
 
 function NoteNotationLesson({
   calibrationData,
+  activeNotes,
   setActiveNotes,
   setHighlightedNotes,
   width,
   height,
 }) {
-  const { addMidiListener, removeMidiListener } = useContext(MIDIContext);
   const { firstNote, lastNote } = calibrationData;
 
-  const backKey = firstNote; // Navigation keys
+  const backKey = firstNote;
   const nextKey = lastNote;
 
   const [currentStep, setCurrentStep] = useState(0);
-  const [progress, setProgress] = useState(0); // For auto-advance steps
-  const stepDuration = 5000; // Time for auto-advance steps
-  let timer = null;
 
+  const [randomSequence, setRandomSequence] = useState([]);
+  const [sequenceIndex, setSequenceIndex] = useState(0);
+
+  const noteLettersForExercise = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const letterToMod = {
+    C: 0,
+    'C#': 1,
+    D: 2,
+    'D#': 3,
+    E: 4,
+    F: 5,
+    'F#': 6,
+    G: 7,
+    'G#': 8,
+    A: 9,
+    'A#': 10,
+    B: 11,
+  };
+
+  const isNoteC = (noteNumber) => noteNumber % 12 === 0;
+  const isNoteD = (noteNumber) => noteNumber % 12 === 2;
+
+  // Steps simplified and broken into smaller instructions
   const steps = [
     {
       content: (
-        <Text key="step1">
-          Welcome to the Note Notation Lesson! Press the highest key to proceed.
-        </Text>
+        <>
+          <Text key="step0">Welcome to this lesson on note notation.</Text>
+          <Text style={{ marginTop: '20px', color: '#4371B1' }}>
+            Press the highest key to continue.
+          </Text>
+        </>
       ),
-      settings: {
-        autoAdvance: false,
-      },
+      settings: { autoAdvance: false },
     },
     {
       content: (
-        <Text key="step2">
-          This is the note C. Find and press the C note on your piano.
-        </Text>
+        <>
+          <Text key="step1">
+            Notes are named A, B, C, D, E, F, G. After G, it loops back to A.
+          </Text>
+          <Text style={{ marginTop: '20px', color: '#4371B1' }}>
+            Press the highest key to continue.
+          </Text>
+        </>
       ),
-      settings: {
-        autoAdvance: false,
-      },
+      settings: { autoAdvance: false },
     },
     {
       content: (
-        <Text key="step3">Great job! You&apos;ve found the C note.</Text>
+        <>
+          <Text key="step2">
+            Let's look at the note C. I've highlighted all C notes.
+          </Text>
+          <Text style={{ marginTop: '20px', color: '#4371B1' }}>
+            Press a C note now.
+          </Text>
+        </>
       ),
-      settings: {
-        autoAdvance: true,
-      },
+      settings: { autoAdvance: false },
     },
     {
-      content: <Text key="step4">The end of the lesson</Text>,
-      settings: {
-        autoAdvance: false,
-      },
+      content: <Text key="step3">Good job !</Text>,
+      settings: { autoAdvance: false },
+    },
+    {
+      content: (
+        <>
+          <Text key="step4">I've highlighted D notes now.</Text>
+          <Text style={{ marginTop: '20px', color: '#4371B1' }}>
+            Press a D note now.
+          </Text>
+        </>
+      ),
+      settings: { autoAdvance: false },
+    },
+    {
+      content: (
+        <>
+          <Text key="step5">
+            Great! Notes go C, D, E, F, G, A, B, then back to C higher.
+          </Text>
+          <Text style={{ marginTop: '20px', color: '#4371B1' }}>
+            Experiment with the notes and their notation. When you are ready for
+            an exercise, press the highest key.
+          </Text>
+        </>
+      ),
+      settings: { autoAdvance: false },
+    },
+    {
+      content: (
+        <Text key="step6">
+          Exercise time: I'll pick 3 random letters (A-G). Play them in order.
+          Once done, lesson ends. I've highlighted these notes for you.
+        </Text>
+      ),
+      settings: { autoAdvance: false },
+    },
+    {
+      content: (
+        <Text key="step7">
+          Excellent! You've done the sequence. Keep exploring and have fun!
+        </Text>
+      ),
+      settings: { autoAdvance: false },
     },
   ];
 
@@ -73,62 +160,105 @@ function NoteNotationLesson({
     }
   };
 
-  const isNoteC = (noteNumber) => noteNumber % 12 === 0;
-
-  const startTimer = () => {
-    if (!steps[currentStep].settings.autoAdvance) return;
-
-    let timeElapsed = 0;
-    timer = setInterval(() => {
-      timeElapsed += 100; // Update every 100ms
-      setProgress((timeElapsed / stepDuration) * 100);
-
-      if (timeElapsed >= stepDuration) {
-        clearInterval(timer);
-        handleNext();
-      }
-    }, 100);
-  };
-
-  const resetTimer = () => {
-    if (timer) clearInterval(timer);
-    setProgress(0);
-  };
-
   useEffect(() => {
-    // Highlight logic based on steps:
-    if (currentStep === 1) {
-      // Highlight all C notes in the range:
+    if (currentStep === 2) {
+      // Highlight all C notes
       const cNotes = [];
       for (let n = firstNote; n <= lastNote; n += 1) {
         if (isNoteC(n)) cNotes.push(n);
       }
       setHighlightedNotes(cNotes);
+    } else if (currentStep === 3) {
+      // Clear highlights, after short wait highlight D and move next
+      setHighlightedNotes([]);
+      const timeout = setTimeout(() => {
+        if (currentStep === 3) {
+          const dNotes = [];
+          for (let n = firstNote; n <= lastNote; n += 1) {
+            if (isNoteD(n)) dNotes.push(n);
+          }
+          setHighlightedNotes(dNotes);
+          handleNext(); // Move to step 4
+        }
+      }, 1000);
+      return () => clearTimeout(timeout);
+    } else if (currentStep === 4) {
+      // D notes step
+      const dNotes = [];
+      for (let n = firstNote; n <= lastNote; n += 1) {
+        if (isNoteD(n)) dNotes.push(n);
+      }
+      setHighlightedNotes(dNotes);
+    } else if (currentStep === 6) {
+      // Generate random sequence
+      const chosenLetters = [];
+      for (let i = 0; i < 3; i += 1) {
+        const randomLetter =
+          noteLettersForExercise[
+            Math.floor(Math.random() * noteLettersForExercise.length)
+          ];
+        chosenLetters.push(randomLetter);
+      }
+      setRandomSequence(chosenLetters);
+      setSequenceIndex(0);
+
+      // Highlight these notes
+      const highlightNotes = [];
+      for (let n = firstNote; n <= lastNote; n += 1) {
+        const noteMod = n % 12;
+        if (chosenLetters.some((letter) => letterToMod[letter] === noteMod)) {
+          highlightNotes.push(n);
+        }
+      }
+      setHighlightedNotes(highlightNotes);
     } else {
-      // Clear highlights otherwise
       setHighlightedNotes([]);
     }
   }, [currentStep, firstNote, lastNote, setHighlightedNotes]);
 
-  useEffect(() => {
-    startTimer();
+  const handlePressSequenceNote = (note) => {
+    const currentLetter = randomSequence[sequenceIndex];
+    const targetMod = letterToMod[currentLetter];
+    if (note % 12 === targetMod) {
+      const nextIndex = sequenceIndex + 1;
+      setSequenceIndex(nextIndex);
+      if (nextIndex >= randomSequence.length) {
+        // Completed sequence
+        handleNext(); // Move to step 7 (end)
+      }
+    }
+  };
 
+  const { addMidiListener, removeMidiListener } = useContext(MIDIContext);
+  useEffect(() => {
     const handleNoteOn = (event) => {
       const note = event.note.number;
 
-      // Navigation keys:
+      // Navigation keys
       if (note === backKey) {
         handleBack();
+        return;
       } else if (note === nextKey) {
+        handleNext();
+        return;
+      }
+
+      setActiveNotes((prev) => {
+        if (!prev.includes(note)) return [...prev, note];
+        return prev;
+      });
+
+      // Step logic
+      if (currentStep === 2 && isNoteC(note)) {
         handleNext();
       }
 
-      // Track active notes:
-      setActiveNotes((prev) => [...prev, note]);
-
-      // Step-specific logic:
-      if (currentStep === 1 && isNoteC(note)) {
+      if (currentStep === 4 && isNoteD(note)) {
         handleNext();
+      }
+
+      if (currentStep === 6) {
+        handlePressSequenceNote(note);
       }
     };
 
@@ -143,7 +273,6 @@ function NoteNotationLesson({
     return () => {
       removeMidiListener('noteon', 'all', handleNoteOn);
       removeMidiListener('noteoff', 'all', handleNoteOff);
-      resetTimer();
     };
   }, [
     addMidiListener,
@@ -152,24 +281,57 @@ function NoteNotationLesson({
     nextKey,
     currentStep,
     setActiveNotes,
+    randomSequence,
+    sequenceIndex,
   ]);
 
-  // Lets compute the width and height ratio;
-  const aspectRatio = width / height;
-
   const SurfaceWrapper = styled.div`
-    aspect-ratio: ${aspectRatio};
     width: 100%;
+    aspect-ratio: ${width} / ${height};
     overflow: hidden;
   `;
+
+  const activeNoteNames = activeNotes.map((n) => getNoteName(n));
+  const activeNoteText =
+    activeNoteNames.length > 0 ? activeNoteNames.join(', ') : '';
+
+  const SequenceContainer = styled.div`
+    margin-top: 20px;
+    font-size: 1.5rem;
+    display: flex;
+    gap: 10px;
+  `;
+  const CompletedNote = styled.span`
+    color: green;
+  `;
+  const PendingNote = styled.span`
+    color: black;
+  `;
+
+  let sequenceDisplay = null;
+  if (currentStep === 6 && randomSequence.length > 0) {
+    sequenceDisplay = (
+      <SequenceContainer>
+        {randomSequence.map((letter, i) => {
+          if (i < sequenceIndex) {
+            // Already played this note
+            return <CompletedNote key={letter}>{letter}</CompletedNote>;
+          } else {
+            return <PendingNote key={letter}>{letter}</PendingNote>;
+          }
+        })}
+      </SequenceContainer>
+    );
+  }
 
   return (
     <SurfaceWrapper>
       <Container>
         {steps[currentStep].content}
-        {steps[currentStep].settings.autoAdvance && (
-          <LoadingBar progress={progress} color="#4caf50" />
-        )}
+        {sequenceDisplay && sequenceDisplay}
+        <Text style={{ marginTop: '20px', fontSize: '2rem' }}>
+          {activeNoteText}
+        </Text>
       </Container>
     </SurfaceWrapper>
   );

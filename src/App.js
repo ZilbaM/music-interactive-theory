@@ -9,16 +9,16 @@ import PerspectiveTransform from './Components/PerspectiveTransform';
 
 function App() {
   const [calibrationData, setCalibrationData] = useState(null);
-  const [activeNotes, setActiveNotes] = useState([]);
-  const [highlightedNotes, setHighlightedNotes] = useState([]);
+  const [activeNotes, setActiveNotes] = useState([]); // Maintained here
+  const [highlightedNotes, setHighlightedNotes] = useState([]); // Also maintained here
 
   const handleCalibrationComplete = (data) => {
     setCalibrationData(data);
   };
 
-  // Define projection surface size (in any consistent unit, e.g., cm)
-  const projectionWidth = 88; // Example: 30 units wide
-  const projectionHeight = 33; // Example: 20 units tall
+  // Define projection surface size
+  const projectionWidth = 88; // Example width in arbitrary units
+  const projectionHeight = 33; // Example height in arbitrary units
 
   return (
     <MIDIProvider>
@@ -29,7 +29,8 @@ function App() {
           <PerspectiveTransform>
             <NoteNotationLesson
               calibrationData={calibrationData}
-              setActiveNotes={setActiveNotes}
+              activeNotes={activeNotes} // Pass activeNotes down
+              setActiveNotes={setActiveNotes} // Pass setter down
               setHighlightedNotes={setHighlightedNotes}
               width={projectionWidth}
               height={projectionHeight}
@@ -39,7 +40,7 @@ function App() {
             <VirtualKeyboard
               firstNote={calibrationData.firstNote}
               lastNote={calibrationData.lastNote}
-              activeNotes={activeNotes}
+              activeNotes={activeNotes} // VirtualKeyboard sees the same activeNotes
               highlightedNotes={highlightedNotes}
             />
           </PerspectiveTransform>
