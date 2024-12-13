@@ -70,7 +70,7 @@ function NoteNotationLesson({ calibrationData }) {
       } else {
         // Handle musical input
         setActiveNotes((prev) => [...prev, note]);
-        PlaygroundCompareNote();
+        PlaygroundCompareNote(event);
       }
     };
 
