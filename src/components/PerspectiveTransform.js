@@ -4,6 +4,7 @@ import styled from 'styled-components';
 const PerspectiveContainer = styled.div`
   width: fit-content;
   position: relative;
+  border: ${({ editable }) => (editable ? '2px solid red' : 'none')};
 `;
 
 const ControlPoint = styled.div`
@@ -165,7 +166,7 @@ function PerspectiveTransform({ children }) {
         });
       }
     }
-  }, [children]); // Re-run when children change
+  }, []);
 
   useLayoutEffect(() => {
     if (containerRef.current) {
@@ -229,7 +230,7 @@ function PerspectiveTransform({ children }) {
   }, []);
 
   return (
-    <PerspectiveContainer ref={containerRef}>
+    <PerspectiveContainer editable={editable} ref={containerRef}>
       <div
         style={{
           transform: matrix,

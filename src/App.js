@@ -9,6 +9,7 @@ import PerspectiveTransform from './Components/PerspectiveTransform';
 function App() {
   const [calibrationData, setCalibrationData] = useState(null);
   const [activeNotes, setActiveNotes] = useState([]);
+  const [highlightedNotes, setHighlightedNotes] = useState([]);
 
   const handleCalibrationComplete = (data) => {
     setCalibrationData(data);
@@ -24,6 +25,7 @@ function App() {
             <NoteNotationLesson
               calibrationData={calibrationData}
               setActiveNotes={setActiveNotes}
+              setHighlightedNotes={setHighlightedNotes}
             />
           </PerspectiveTransform>
           <PerspectiveTransform>
@@ -31,6 +33,7 @@ function App() {
               firstNote={calibrationData.firstNote}
               lastNote={calibrationData.lastNote}
               activeNotes={activeNotes}
+              highlightedNotes={highlightedNotes}
             />
           </PerspectiveTransform>
         </>
