@@ -1,5 +1,6 @@
 // src/Lessons/NoteNotationLesson.js
 import React, { useEffect, useState, useContext } from 'react';
+import styled from 'styled-components';
 import { MIDIContext } from '../Context/MIDIContext';
 import Container from '../Components/UI/Container';
 import Text from '../Components/UI/Text';
@@ -9,6 +10,8 @@ function NoteNotationLesson({
   calibrationData,
   setActiveNotes,
   setHighlightedNotes,
+  width,
+  height,
 }) {
   const { addMidiListener, removeMidiListener } = useContext(MIDIContext);
   const { firstNote, lastNote } = calibrationData;
@@ -151,13 +154,24 @@ function NoteNotationLesson({
     setActiveNotes,
   ]);
 
+  // Lets compute the width and height ratio;
+  const aspectRatio = width / height;
+
+  const SurfaceWrapper = styled.div`
+    aspect-ratio: ${aspectRatio};
+    width: 100%;
+    overflow: hidden;
+  `;
+
   return (
-    <Container>
-      {steps[currentStep].content}
-      {steps[currentStep].settings.autoAdvance && (
-        <LoadingBar progress={progress} color="#4caf50" />
-      )}
-    </Container>
+    <SurfaceWrapper>
+      <Container>
+        {steps[currentStep].content}
+        {steps[currentStep].settings.autoAdvance && (
+          <LoadingBar progress={progress} color="#4caf50" />
+        )}
+      </Container>
+    </SurfaceWrapper>
   );
 }
 
