@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { MIDIProvider } from './Context/MIDIContext';
 import Calibration from './Components/Calibration';
 import NoteNotationLesson from './Lessons/NoteNotationLesson';
+import NoteIdentificationLesson from './Lessons/NoteIdentificationLesson';
 import VirtualKeyboard from './Components/VirtualKeyboard';
 import PerspectiveTransform from './Components/PerspectiveTransform';
 
@@ -20,7 +21,7 @@ function App() {
         <Calibration onCalibrationComplete={handleCalibrationComplete} />
       ) : (
         <>
-          <NoteNotationLesson
+          <NoteIdentificationLesson
             calibrationData={calibrationData}
             setActiveNotes={setActiveNotes}
           />
