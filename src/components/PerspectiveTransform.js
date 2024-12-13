@@ -165,7 +165,7 @@ function PerspectiveTransform({ children }) {
         });
       }
     }
-  }, [children]); // Re-run when children change
+  }, []);
 
   useLayoutEffect(() => {
     if (containerRef.current) {

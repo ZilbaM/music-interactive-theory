@@ -1,20 +1,27 @@
 // src/Lessons/NoteNotationLesson.js
 import React, { useEffect, useState, useContext } from 'react';
+import styled from 'styled-components';
 import { MIDIContext } from '../Context/MIDIContext';
 import Container from '../Components/UI/Container';
 import Text from '../Components/UI/Text';
 import LoadingBar from '../Components/UI/LoadingBar';
 
-function NoteNotationLesson({ calibrationData }) {
+function NoteNotationLesson({
+  calibrationData,
+  setActiveNotes,
+  setHighlightedNotes,
+  width,
+  height,
+}) {
   const { addMidiListener, removeMidiListener } = useContext(MIDIContext);
-
   const { firstNote, lastNote } = calibrationData;
-  const backKey = firstNote; // Lowest key as Back
-  const nextKey = lastNote; // Highest key as Next
+
+  const backKey = firstNote; // Navigation keys
+  const nextKey = lastNote;
+
   const [currentStep, setCurrentStep] = useState(0);
-  const [activeNotes, setActiveNotes] = useState([]);
-  const [progress, setProgress] = useState(0); // LoadingBar progress
-  const stepDuration = 5000;
+  const [progress, setProgress] = useState(0); // For auto-advance steps
+  const stepDuration = 5000; // Time for auto-advance steps
   let timer = null;
 
   const steps = [
@@ -66,8 +73,10 @@ function NoteNotationLesson({ calibrationData }) {
     }
   };
 
+  const isNoteC = (noteNumber) => noteNumber % 12 === 0;
+
   const startTimer = () => {
-    if (!steps[currentStep].settings.autoAdvance) return; // no timer is set if autoAdvance is false
+    if (!steps[currentStep].settings.autoAdvance) return;
 
     let timeElapsed = 0;
     timer = setInterval(() => {
@@ -76,35 +85,50 @@ function NoteNotationLesson({ calibrationData }) {
 
       if (timeElapsed >= stepDuration) {
         clearInterval(timer);
-        handleNext(); // If the timer is passed then the steps go on
+        handleNext();
       }
     }, 100);
   };
 
   const resetTimer = () => {
-    clearInterval(timer);
+    if (timer) clearInterval(timer);
     setProgress(0);
   };
 
-  const isNoteC = (noteNumber) => noteNumber % 12 === 0;
+  useEffect(() => {
+    // Highlight logic based on steps:
+    if (currentStep === 1) {
+      // Highlight all C notes in the range:
+      const cNotes = [];
+      for (let n = firstNote; n <= lastNote; n += 1) {
+        if (isNoteC(n)) cNotes.push(n);
+      }
+      setHighlightedNotes(cNotes);
+    } else {
+      // Clear highlights otherwise
+      setHighlightedNotes([]);
+    }
+  }, [currentStep, firstNote, lastNote, setHighlightedNotes]);
 
   useEffect(() => {
     startTimer();
+
     const handleNoteOn = (event) => {
       const note = event.note.number;
 
+      // Navigation keys:
       if (note === backKey) {
         handleBack();
       } else if (note === nextKey) {
         handleNext();
-      } else {
-        // Handle musical input
-        setActiveNotes((prev) => [...prev, note]);
+      }
 
-        // For specific steps, check if the correct note is played
-        if (currentStep === 1 && isNoteC(note)) {
-          handleNext();
-        }
+      // Track active notes:
+      setActiveNotes((prev) => [...prev, note]);
+
+      // Step-specific logic:
+      if (currentStep === 1 && isNoteC(note)) {
+        handleNext();
       }
     };
 
@@ -121,15 +145,33 @@ function NoteNotationLesson({ calibrationData }) {
       removeMidiListener('noteoff', 'all', handleNoteOff);
       resetTimer();
     };
-  }, [addMidiListener, removeMidiListener, backKey, nextKey, currentStep]);
+  }, [
+    addMidiListener,
+    removeMidiListener,
+    backKey,
+    nextKey,
+    currentStep,
+    setActiveNotes,
+  ]);
+
+  // Lets compute the width and height ratio;
+  const aspectRatio = width / height;
+
+  const SurfaceWrapper = styled.div`
+    aspect-ratio: ${aspectRatio};
+    width: 100%;
+    overflow: hidden;
+  `;
 
   return (
-    <Container>
-      {steps[currentStep].content}
-      {steps[currentStep].settings.autoAdvance && (
-        <LoadingBar progress={progress} color="#4caf50" />
-      )}
-    </Container>
+    <SurfaceWrapper>
+      <Container>
+        {steps[currentStep].content}
+        {steps[currentStep].settings.autoAdvance && (
+          <LoadingBar progress={progress} color="#4caf50" />
+        )}
+      </Container>
+    </SurfaceWrapper>
   );
 }
 
