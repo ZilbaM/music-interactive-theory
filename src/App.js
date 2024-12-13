@@ -20,10 +20,12 @@ function App() {
         <Calibration onCalibrationComplete={handleCalibrationComplete} />
       ) : (
         <>
-          <NoteNotationLesson
-            calibrationData={calibrationData}
-            setActiveNotes={setActiveNotes}
-          />
+          <PerspectiveTransform>
+            <NoteNotationLesson
+              calibrationData={calibrationData}
+              setActiveNotes={setActiveNotes}
+            />
+          </PerspectiveTransform>
           <PerspectiveTransform>
             <VirtualKeyboard
               firstNote={calibrationData.firstNote}
