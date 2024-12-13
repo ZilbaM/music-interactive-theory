@@ -1,9 +1,9 @@
 // src/Lessons/NoteNotationLesson.js
 import React, { useEffect, useState, useContext } from 'react';
+import { Note } from 'tonal';
 import { MIDIContext } from '../Context/MIDIContext';
 import Container from '../Components/UI/Container';
 import Text from '../Components/UI/Text';
-import LoadingBar from '../Components/UI/LoadingBar';
 
 function NoteNotationLesson({ calibrationData }) {
   const { addMidiListener, removeMidiListener } = useContext(MIDIContext);
@@ -13,45 +13,16 @@ function NoteNotationLesson({ calibrationData }) {
   const nextKey = lastNote; // Highest key as Next
   const [currentStep, setCurrentStep] = useState(0);
   const [activeNotes, setActiveNotes] = useState([]);
-  const [progress, setProgress] = useState(0); // LoadingBar progress
-  const stepDuration = 5000;
-  let timer = null;
+  const [noteCount, setNoteCount] = useState({});
 
   const steps = [
-    {
-      content: (
-        <Text key="step1">
-          Welcome to the Note Notation Lesson! Press the highest key to proceed.
-        </Text>
-      ),
-      settings: {
-        autoAdvance: false,
-      },
-    },
-    {
-      content: (
-        <Text key="step2">
-          This is the note C. Find and press the C note on your piano.
-        </Text>
-      ),
-      settings: {
-        autoAdvance: false,
-      },
-    },
-    {
-      content: (
-        <Text key="step3">Great job! You&apos;ve found the C note.</Text>
-      ),
-      settings: {
-        autoAdvance: true,
-      },
-    },
-    {
-      content: <Text key="step4">The end of the lesson</Text>,
-      settings: {
-        autoAdvance: false,
-      },
-    },
+    <Text key="step1">
+      Welcome to the Note Notation Lesson! Press the highest key to proceed.
+    </Text>,
+    <Text key="step2">
+      This is the note C. Find and press the C note on your piano.
+    </Text>,
+    <Text key="step3">Great job! You&apos;ve found the C note.</Text>,
   ];
 
   const handleNext = () => {
@@ -66,33 +37,41 @@ function NoteNotationLesson({ calibrationData }) {
     }
   };
 
-  const startTimer = () => {
-    if (!steps[currentStep].settings.autoAdvance) return; // no timer is set if autoAdvance is false
-
-    let timeElapsed = 0;
-    timer = setInterval(() => {
-      timeElapsed += 100; // Update every 100ms
-      setProgress((timeElapsed / stepDuration) * 100);
-
-      if (timeElapsed >= stepDuration) {
-        clearInterval(timer);
-        handleNext(); // If the timer is passed then the steps go on
-      }
-    }, 100);
+  const updateNoteCount = (note) => {
+    setNoteCount((prevCounts) => {
+      const updatedCounts = { ...prevCounts };
+      updatedCounts[note] = (updatedCounts[note] || 0) + 1;
+      return updatedCounts;
+    });
   };
 
-  const resetTimer = () => {
-    clearInterval(timer);
-    setProgress(0);
+  const isNote = (noteNumber, toCompare) => {
+    const midiNote = Note.fromMidi(noteNumber);
+    const chroma = Note.chroma(midiNote);
+    const targetChroma = Note.chroma(Note.get(toCompare));
+    console.log(
+      `Note MIDI: ${midiNote}, Chroma: ${chroma}, Target Chroma: ${targetChroma}`
+    );
+    return chroma === targetChroma;
   };
 
-  const isNoteC = (noteNumber) => noteNumber % 12 === 0;
+  const PlaygroundCompareNote = (note, noteToCompare) => {
+    if (currentStep === 1 && isNote(note, noteToCompare)) {
+      setNoteCount((prevCounts) => {
+        const updatedCounts = { ...prevCounts };
+        updatedCounts[noteToCompare] = (updatedCounts[noteToCompare] || 0) + 1;
+        if (updatedCounts[noteToCompare] > 3) {
+          handleNext();
+        }
+
+        return updatedCounts;
+      });
+    }
+  };
 
   useEffect(() => {
-    startTimer();
     const handleNoteOn = (event) => {
       const note = event.note.number;
-
       if (note === backKey) {
         handleBack();
       } else if (note === nextKey) {
@@ -100,11 +79,7 @@ function NoteNotationLesson({ calibrationData }) {
       } else {
         // Handle musical input
         setActiveNotes((prev) => [...prev, note]);
-
-        // For specific steps, check if the correct note is played
-        if (currentStep === 1 && isNoteC(note)) {
-          handleNext();
-        }
+        PlaygroundCompareNote(note, 'C');
       }
     };
 
@@ -119,18 +94,10 @@ function NoteNotationLesson({ calibrationData }) {
     return () => {
       removeMidiListener('noteon', 'all', handleNoteOn);
       removeMidiListener('noteoff', 'all', handleNoteOff);
-      resetTimer();
     };
   }, [addMidiListener, removeMidiListener, backKey, nextKey, currentStep]);
 
-  return (
-    <Container>
-      {steps[currentStep].content}
-      {steps[currentStep].settings.autoAdvance && (
-        <LoadingBar progress={progress} color="#4caf50" />
-      )}
-    </Container>
-  );
+  return <Container>{steps[currentStep]}</Container>;
 }
 
 export default NoteNotationLesson;
