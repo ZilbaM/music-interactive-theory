@@ -3,11 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: [
-    'react-app',
-    'airbnb',
-    'prettier',
-  ],
+  extends: ['react-app', 'airbnb', 'prettier'],
   plugins: ['react', 'prettier'],
   rules: {
     'prettier/prettier': 'error', // Displays Prettier errors as ESLint errors
@@ -27,7 +23,10 @@ module.exports = {
       },
       files: ['**/*.test.js', '**/*.test.jsx', 'src/setupTests.js'],
       rules: {
-        'import/no-extraneous-dependencies': ['error', { devDependencies: true }],
+        'import/no-extraneous-dependencies': [
+          'error',
+          { devDependencies: true },
+        ],
       },
     },
   ],
