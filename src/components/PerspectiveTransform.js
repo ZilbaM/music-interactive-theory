@@ -14,6 +14,8 @@ const ControlPoint = styled.div`
   border-radius: 50%;
   cursor: pointer;
   transform: translate(-50%, -50%);
+  pointer-events: all;
+  z-index: 9999;
 `;
 
 function PerspectiveTransform({ children }) {
@@ -234,6 +236,7 @@ function PerspectiveTransform({ children }) {
           transformOrigin: '0 0',
           width: '100%',
           height: '100%',
+          pointerEvents: 'none',
         }}
       >
         {children}
