@@ -14,6 +14,9 @@ module.exports = {
     'default-param-last': 'off',
     'react/prop-types': 'off',
     'no-nested-ternary': 'off',
+    'react/no-unescaped-entities': 'off',
+    'consistent-return': 'off',
+    'no-else-return': 'off',
     // Add or adjust rules as needed
   },
   overrides: [
