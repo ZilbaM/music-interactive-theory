@@ -168,7 +168,7 @@ function NoteNotationLesson({
       <Container>
         {steps[currentStep].content}
         {steps[currentStep].settings.autoAdvance && (
-          <LoadingBar progress={progress} color="#4caf50" />
+          <LoadingBar progress={progress} color="#4371b1" />
         )}
       </Container>
     </SurfaceWrapper>
