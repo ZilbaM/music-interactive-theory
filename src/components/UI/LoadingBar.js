@@ -13,7 +13,7 @@ const BarContainer = styled.div`
 const BarProgress = styled.div`
   height: 100%;
   width: ${({ progress }) => progress}%;
-  background-color: ${({ color }) => color || '#4caf50'};
+  background-color: ${({ color }) => color || '#4371b1'};
   transition: width 0.1s ease-in-out;
 `;
 
