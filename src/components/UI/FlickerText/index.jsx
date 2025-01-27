@@ -1,10 +1,10 @@
-import React from 'react'
+import clsx from 'clsx';
 
-export default function FlickerText({children, className}) {
+function FlickerText({ children, className }) {
   return (
-    <div className={className + " animate-pulse"}>
-        {children}
+    <div className={clsx(className, 'animate-pulse')}>
+      {children}
     </div>
-  )
+  );
 }
-
+export default FlickerText;
