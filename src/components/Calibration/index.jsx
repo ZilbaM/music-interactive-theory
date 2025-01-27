@@ -1,82 +1,143 @@
 "use client";
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useCalibrationContext } from "../context/CalibrationContext";
+import { useNotesContext } from "../context/NotesContext";
 import { useMIDIContext } from "../context/MIDIContext";
-import { useGlobalState } from "../context/GlobalStateContext";
+import FlickerText from "@/components/UI/FlickerText";
 
 function Calibration() {
-  const { setCalibrationData } = useGlobalState();
+  const { setCalibrationData } = useCalibrationContext();
+  const { activeNotes } = useNotesContext(); // Array of currently pressed notes
+  const { isWebMidiEnabled } = useMIDIContext();
 
-   // Ref to track if calibration has started
-   const calibrationStarted = useRef(false);
+  // Phase legend:
+  //   0: waiting for "any note" to start
+  //   1: waiting for "lowest key" (held 3s)
+  //   2: waiting for "highest key" (held 3s)
+  //   3: done
+  const [phase, setPhase] = useState(0);
 
-  // Memoize onCalibrationComplete to prevent re-creation on every render
-  const onCalibrationComplete = useCallback(
-    (firstNote, lastNote) => {
-      console.log("Calibration complete!");
-      setCalibrationData({
-        firstNote,
-        lastNote,
-      });
-    },
-    [setCalibrationData]
-  );
+  // Note being evaluated and when it was pressed
+  const [pendingNote, setPendingNote] = useState(null);
+  const [pressedAt, setPressedAt] = useState(null);
 
-  const { addMidiListener, removeMidiListener, isWebMidiEnabled } = useMIDIContext();
-  console.log(isWebMidiEnabled)
+  const [lowestNote, setLowestNote] = useState(null);
+  const [countdown, setCountdown] = useState(null); // For visual feedback
   const [message, setMessage] = useState(
-    "Welcome to the Music Interactive Theory! Let's start by calibrating the keyboard. Press any key to continue."
+    "Welcome! Press any key to begin calibration."
   );
 
+  const intervalRef = useRef(null);
+
+  // Start countdown timer
   useEffect(() => {
-    // Prevent calibration from running multiple times
-    if (calibrationStarted.current || !isWebMidiEnabled) {
+    if (phase !== 1 && phase !== 2) {
+      setCountdown(null);
       return;
     }
-    calibrationStarted.current = true;
 
-    // Function to wait for a note to be pressed
-    const waitForNote = () =>
-      new Promise((resolve) => {
-        const handleNoteOn = (event) => {
-          const note = event.note.number;
-          removeMidiListener("noteon", "all", handleNoteOn); // Remove the specific listener
-          resolve(note);
-        };
-        addMidiListener("noteon", "all", handleNoteOn);
-      });
+    if (pendingNote && pressedAt) {
+      intervalRef.current = setInterval(() => {
+        const now = Date.now();
+        const elapsed = now - pressedAt;
+        const remaining = Math.max(3 - Math.floor(elapsed / 1000), 0);
 
-    const calibrate = async () => {
-      // Step 1: Wait for any key press to start
-      console.log("Please press any key on your MIDI piano.");
-      await waitForNote();
-      
-      // Step 2: Wait for the lowest key
-      console.log("Please press the lowest key on your MIDI piano.");
-      setMessage("Please press the lowest key on your MIDI piano.");
-      const firstNote = await waitForNote();
+        if (remaining === 0) {
+          clearInterval(intervalRef.current);
+          setCountdown("Good!"); // Show "Good!" briefly before moving on
+          setTimeout(() => {
+            confirmNote(pendingNote);
+          }, 1000);
+        } else {
+          setCountdown(remaining);
+        }
+      }, 100);
 
-      // Step 3: Wait for the highest key
-      console.log("Please press the highest key on your MIDI piano.");
-      setMessage("Please press the highest key on your MIDI piano.");
-      const lastNote = await waitForNote();
+      return () => {
+        clearInterval(intervalRef.current);
+      };
+    }
+  }, [pendingNote, pressedAt, phase]);
 
-      // Step 4: Save the calibration data
+  // Confirm a note after the countdown
+  function confirmNote(note) {
+    if (phase === 1) {
+      setLowestNote(note);
+      setMessage("Great! Now press and hold the *highest* key for 3 seconds.");
+      setPhase(2);
+      setPendingNote(null);
+      setPressedAt(null);
+      setCountdown(null);
+    } else if (phase === 2) {
       setMessage("Calibration complete!");
-      onCalibrationComplete(firstNote, lastNote);
-    };
+      setPhase(3);
 
-    calibrate(); // Start the calibration process
+      // Save calibration data
+      setCalibrationData({
+        firstNote: lowestNote,
+        lastNote: note,
+      });
+    }
+  }
 
-    return () => {
-      // Clean up listeners if the component unmounts
-      removeMidiListener("noteon", "all");
-    };
-  }, [addMidiListener, removeMidiListener, onCalibrationComplete, isWebMidiEnabled]);
+  // Handle logic for current phase when `activeNotes` changes
+  useEffect(() => {
+    if (!isWebMidiEnabled) return;
+
+    if (phase === 0) {
+      if (activeNotes.length > 0) {
+        setMessage("Good!")
+        setTimeout(() => {
+          setMessage("Please press and hold the *lowest* key for 3 seconds.");
+          setPhase(1);
+        }, 1000)
+      }
+      return;
+    }
+
+    if (phase === 1 || phase === 2) {
+      if (activeNotes.length === 0) {
+        // User released all keys
+        setPendingNote(null);
+        setPressedAt(null);
+        setCountdown(null);
+      } else {
+        const targetNote =
+          phase === 1 ? Math.min(...activeNotes) : Math.max(...activeNotes);
+
+        if (pendingNote === null) {
+          // Start tracking this note
+          setPendingNote(targetNote);
+          setPressedAt(Date.now());
+        } else if (targetNote !== pendingNote || activeNotes.length > 1) {
+          // User pressed a new note or multiple notes—reset
+          setPendingNote(targetNote);
+          setPressedAt(Date.now());
+        }
+      }
+    }
+  }, [activeNotes, phase, pendingNote, isWebMidiEnabled]);
 
   return (
-    <div>
-      <h2>Calibration</h2>
-      <p>{message}</p>
+    <div className="flex flex-col items-center">
+      <h2 className="text-3xl font-semibold mb-4">Calibration</h2>
+      {phase < 3 && (
+        <div>
+
+          {countdown !== null ? (
+            <p className="text-2xl">
+              {
+                countdown == "Good!" ? (
+                  <span className="text-green-500">Good!</span>
+                ) : (
+                  "Hold ! " + countdown
+                )
+              }
+            </p>
+          ) : <FlickerText className="text-lg">{message}</FlickerText>
+        }
+          </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import StepSequencer from '@/components/StepSequencer';
 
 // Specialized Steps
@@ -11,14 +11,16 @@ import ExerciseStep from '@/components/Step/ExerciseStep';
 
 // Utility functions
 import { getAllNotesOfModRange, getRandomSequence, getNoteName } from '@/utils/notes';
-import { useGlobalState } from '@/components/context/GlobalStateContext';
+
+// Context providers
+import { useNotesContext } from '@/components/context/NotesContext';
+import { useCalibrationContext } from '@/components/context/CalibrationContext';
 
 export default function NoteNotationLessonPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const {highlightedNotes, setHighlightedNotes} = useGlobalState();
-
-  const firstNote = 48; // C2
-  const lastNote = 72; // C4
+  const {highlightedNotes, setHighlightedNotes} = useNotesContext();
+  const {calibrationData: {firstNote, lastNote}} = useCalibrationContext();
+  
   const backKey = firstNote;
   const nextKey = lastNote;
 
@@ -138,39 +140,14 @@ export default function NoteNotationLessonPage() {
       <p className="mt-2 text-green-600">You've completed the sequence. Keep exploring and have fun!</p>
     </ManualStep>,
   ]);
-  
-  console.log("Mounting NoteNotationLessonPage");
 
   return (
-      <div className="w-full max-w-2xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8 text-center">Note Notation Lesson</h1>
+      <div className="w-full flex flex-col justify-center mx-auto p-6">
         <StepSequencer
           steps={steps}
           currentIndex={currentIndex}
           setCurrentIndex={setCurrentIndex}
         />
-
-        {/* Navigation Buttons */}
-        <div className="mt-6 flex justify-center gap-4">
-          <button
-            onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))}
-            disabled={currentIndex === 0}
-            className={`px-4 py-2 bg-gray-300 rounded ${
-              currentIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-400'
-            }`}
-          >
-            Back
-          </button>
-          <button
-            onClick={() => setCurrentIndex((i) => (i < steps.length - 1 ? i + 1 : i))}
-            disabled={currentIndex >= steps.length - 1}
-            className={`px-4 py-2 bg-blue-300 rounded ${
-              currentIndex >= steps.length - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-400'
-            }`}
-          >
-            Next
-          </button>
-        </div>
       </div>
   );
 }

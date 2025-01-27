@@ -44,13 +44,11 @@ export function MIDIContextProvider({ children }) {
 
   // Provide methods to add and remove event listeners
   const addMidiListener = useCallback((type, channel, listener) => {
-    console.log(`Adding MIDI listener: type=${type}, channel=${channel}`);
     inputs.forEach((input) => {
       input.addListener(type, channel, listener);
     })}, [isWebMidiEnabled]);
 
   const removeMidiListener = useCallback((type, channel, listener) => {
-    console.log(`Removing MIDI listener: type=${type}, channel=${channel}`);
     inputs.forEach((input) => {
       input.removeListener(type, channel, listener);
     });

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import BaseStep from '../';
 import { useMIDIContext } from '@/components/context/MIDIContext';
+import { useNotesContext } from '@/components/context/NotesContext';
 
 export default function ExerciseStep({
   completeStep,
@@ -10,12 +11,11 @@ export default function ExerciseStep({
   children,
   sequence = [], // Array of MIDI note numbers or mod values
 }) {
-  const { addMIDIListener, removeMIDIListener } = useMIDIContext();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { activeNotes } = useNotesContext();
 
-  const handleNoteOn = (event) => {
-    const noteNumber = event.note.number;
-    if (noteNumber === sequence[currentIndex]) {
+  useEffect(() =>{
+    if (activeNotes.includes(sequence[currentIndex])) {
       setCurrentIndex((prev) => {
         const nextIndex = prev + 1;
         if (nextIndex >= sequence.length) {
@@ -24,19 +24,7 @@ export default function ExerciseStep({
         return nextIndex;
       });
     }
-  };
-
-  useEffect(() => {
-    if (sequence.length > 0) {
-      addMIDIListener('noteon', handleNoteOn);
-    }
-
-    return () => {
-      if (sequence.length > 0) {
-        removeMIDIListener('noteon', handleNoteOn);
-      }
-    };
-  }, [addMIDIListener, removeMIDIListener, sequence, currentIndex]);
+  }, [activeNotes])
 
   return (
     <BaseStep completeStep={completeStep} onEnter={onEnter} onExit={onExit}>

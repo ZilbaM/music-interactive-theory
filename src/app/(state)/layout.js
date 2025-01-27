@@ -1,22 +1,26 @@
 "use client";
-import { useGlobalState } from "@/components/context/GlobalStateContext";
 import VirtualKeyboard from "@/components/VirtualKeyboard";
 import Calibration from "@/components/Calibration";
 import PerspectiveTransform from "react-perspective-transform";
+import { useCalibrationContext } from "@/components/context/CalibrationContext";
 
 export default function SubLayout({ children }) {
-  const { calibrationData } = useGlobalState();
+  const { calibrationData, projectionWidth, projectionHeight } = useCalibrationContext();
 
   return calibrationData ? (
-    <>
-      <PerspectiveTransform>{children}</PerspectiveTransform>
+    <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-center gap-3">
       <PerspectiveTransform>
-        <VirtualKeyboard />
+        <div style={{"aspectRatio" : `${projectionWidth} / ${projectionHeight}`}}>
+          {children}
+        </div>
+        </PerspectiveTransform>
+      <PerspectiveTransform>
+        <VirtualKeyboard firstNote={calibrationData.firstNote} lastNote={calibrationData.lastNote} />
       </PerspectiveTransform>
-    </>
+    </div>
   ) : (
-    <PerspectiveTransform>
-      <Calibration />
-    </PerspectiveTransform>
+      <div className="flex justify-center items-center h-screen w-screen overflow-hidden">
+        <Calibration />
+      </div>
   );
 }
