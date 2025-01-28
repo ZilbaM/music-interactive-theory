@@ -12,8 +12,8 @@ function Calibration() {
 
   // Phase legend:
   //   0: waiting for "any note" to start
-  //   1: waiting for "lowest key" (held 3s)
-  //   2: waiting for "highest key" (held 3s)
+  //   1: waiting for "lowest key" (held 3s, released after)
+  //   2: waiting for "highest key" (held 3s, released after)
   //   3: done
   const [phase, setPhase] = useState(0);
 
@@ -42,12 +42,9 @@ function Calibration() {
         const elapsed = now - pressedAt;
         const remaining = Math.max(3 - Math.floor(elapsed / 1000), 0);
 
-        if (remaining === 0) {
+        if (remaining === 0 && activeNotes.length === 1) {
           clearInterval(intervalRef.current);
-          setCountdown("Good!"); // Show "Good!" briefly before moving on
-          setTimeout(() => {
-            confirmNote(pendingNote);
-          }, 1000);
+          setCountdown("Release!"); // Show "Release!" briefly before moving on
         } else {
           setCountdown(remaining);
         }
@@ -57,9 +54,9 @@ function Calibration() {
         clearInterval(intervalRef.current);
       };
     }
-  }, [pendingNote, pressedAt, phase]);
+  }, [pendingNote, pressedAt, phase, activeNotes]);
 
-  // Confirm a note after the countdown
+  // Confirm a note after release
   function confirmNote(note) {
     if (phase === 1) {
       setLowestNote(note);
@@ -86,18 +83,21 @@ function Calibration() {
 
     if (phase === 0) {
       if (activeNotes.length > 0) {
-        setMessage("Good!")
+        setMessage("Good!");
         setTimeout(() => {
           setMessage("Please press and hold the *lowest* key for 3 seconds.");
           setPhase(1);
-        }, 1000)
+        }, 1000);
       }
       return;
     }
 
     if (phase === 1 || phase === 2) {
-      if (activeNotes.length === 0) {
-        // User released all keys
+      if (activeNotes.length === 0 && countdown === "Release!") {
+        // User released the key after holding for 3 seconds
+        confirmNote(pendingNote);
+      } else if (activeNotes.length === 0) {
+        // User released keys too early
         setPendingNote(null);
         setPressedAt(null);
         setCountdown(null);
@@ -116,27 +116,25 @@ function Calibration() {
         }
       }
     }
-  }, [activeNotes, phase, pendingNote, isWebMidiEnabled]);
+  }, [activeNotes, phase, pendingNote, countdown, isWebMidiEnabled]);
 
   return (
     <div className="flex flex-col items-center">
       <h2 className="text-3xl font-semibold mb-4">Calibration</h2>
       {phase < 3 && (
         <div>
-
           {countdown !== null ? (
             <p className="text-2xl">
-              {
-                countdown == "Good!" ? (
-                  <span className="text-green-500">Release!</span>
-                ) : (
-                  "Hold ! " + countdown
-                )
-              }
+              {countdown === "Release!" ? (
+                <span className="text-green-500">Release!</span>
+              ) : (
+                "Hold! " + countdown
+              )}
             </p>
-          ) : <FlickerText className="text-lg">{message}</FlickerText>
-        }
-          </div>
+          ) : (
+            <FlickerText className="text-lg">{message}</FlickerText>
+          )}
+        </div>
       )}
     </div>
   );
