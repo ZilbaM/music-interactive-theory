@@ -15,12 +15,12 @@ export function NotesProvider({ children }) {
       if (!isWebMidiEnabled) return
   
       function handleNoteOn(e) {
-        console.log("Note detected:", e.note.number);
+        // console.log("Note detected:", e.note.number);
         const note = e.note.number;
         setActiveNotes((prev) => Array.from(new Set([...prev, note])));
       }
       function handleNoteOff(e) {
-        console.log("Note released:", e.note.number);
+        // console.log("Note released:", e.note.number);
         const note = e.note.number;
         setActiveNotes((prev) => prev.filter((n) => n !== note));
       }

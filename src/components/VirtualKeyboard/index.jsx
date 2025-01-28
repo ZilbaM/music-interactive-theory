@@ -67,8 +67,8 @@ function VirtualKeyboard() {
               className={clsx(
                 "h-full w-full border border-black",
                 {
+                  '!bg-activeNotes': isActive(note),
                   'bg-highlightedNotes': isHighlighted(note),
-                  'bg-activeNotes': isActive(note),
                   'bg-white': !isActive(note) && !isHighlighted(note),
                 }
               )}

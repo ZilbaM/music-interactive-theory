@@ -18,14 +18,10 @@ import { useNotesContext } from "@/components/context/NotesContext";
  *   - Provides lifecycle hooks (`onEnter` and `onExit`).
  */
 export default function BaseStep({
-  completeStep,
   onEnter,
   onExit,
-  triggerNotes = [], // Array of MIDI notes that can complete this step
   children,
 }) {
-  const { activeNotes } = useNotesContext();
-
   useEffect(() => {
     // Call onEnter when the step mounts
     if (onEnter) onEnter();
@@ -36,14 +32,5 @@ export default function BaseStep({
     };
   }, [onEnter, onExit]);
 
-  useEffect(() => {
-    if (
-      triggerNotes.length > 0 &&
-      activeNotes.some((note) => triggerNotes.includes(note))
-    ) {
-      completeStep(); // Trigger step completion when a matching note is pressed
-    }
-  }, [activeNotes, triggerNotes, completeStep]);
-
-  return <div className="max-w-full max-h-full overflow-hidden">{children}</div>;
+  return <div className="max-w-full max-h-full overflow-hidden flex mx-auto flex-col items-center">{children}</div>;
 }

@@ -3,151 +3,152 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import StepSequencer from '@/components/StepSequencer';
 
-// Specialized Steps
-import ManualStep from '@/components/Step/ManualStep';
-import ChordStep from '@/components/Step/ChordStep';
-import TimeStep from '@/components/Step/TimeStep';
-import ExerciseStep from '@/components/Step/ExerciseStep';
+// Steps
+import SingleNoteStep from '@/components/Step/SingleNoteStep';
+import SequenceStep from '@/components/Step/SequenceStep';
+import DelayStep from '@/components/Step/DelayStep';
 
 // Utility functions
-import { getAllNotesOfModRange, getRandomSequence, getNoteName } from '@/utils/notes';
+import {
+  getAllNotesOfModRange,
+  getRandomSequence,
+  getNoteLetter,
+} from '@/utils/notes';
 
 // Context providers
 import { useNotesContext } from '@/components/context/NotesContext';
 import { useCalibrationContext } from '@/components/context/CalibrationContext';
 
+// UI Components
+import FlickerText from '@/components/UI/FlickerText';
+import { Midi, Note } from 'tonal';
+
 export default function NoteNotationLessonPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const {highlightedNotes, setHighlightedNotes} = useNotesContext();
-  const {calibrationData: {firstNote, lastNote}} = useCalibrationContext();
-  
-  const backKey = firstNote;
-  const nextKey = lastNote;
+  const { highlightedNotes, setHighlightedNotes } = useNotesContext();
+  const { calibrationData } = useCalibrationContext();
 
+  // Safely destructure firstNote / lastNote (defaults if undefined)
+  const firstNote = calibrationData?.firstNote ?? 48; // fallback to C2
+  const lastNote = calibrationData?.lastNote ?? 72;  // fallback to C4
 
   // Generate random sequence for exercise
   const generateRandomSequence = () => {
-    const randomMods = getRandomSequence(3); // Generates 3 random mod values [0-11]
-    return randomMods;
+    return getRandomSequence(3); // 3 random mod values in [0..11]
   };
 
   const [exerciseSequence, setExerciseSequence] = useState(generateRandomSequence());
 
-  // Define the steps
+  // Step logic for highlighting certain notes
+  const highlightC = useCallback(() => {
+    setHighlightedNotes(getAllNotesOfModRange(firstNote, lastNote, 0));
+  }, [firstNote, lastNote, setHighlightedNotes]);
+
+  const highlightD = useCallback(() => {
+    setHighlightedNotes(getAllNotesOfModRange(firstNote, lastNote, 2));
+  }, [firstNote, lastNote, setHighlightedNotes]);
+
+  const clearHighlights = useCallback(() => {
+    setHighlightedNotes([]);
+  }, [setHighlightedNotes]);
+
   const steps = useMemo(() => [
-    // Step 1: Welcome - ManualStep waiting for highest key or button
-    <ManualStep
+    // Step 1: Welcome
+    <DelayStep
       key="welcome"
-      triggerNote={nextKey}
+      delay={3000}
+      onEnter={() => {
+        clearHighlights();
+      }}
+      onExit={clearHighlights}
+      completeStep={() => {
+      }}
     >
       <h2 className="text-xl font-semibold">Welcome to the Note Notation Lesson!</h2>
-      <p className="mt-2 text-gray-700">Press the highest key or click the button below to continue.</p>
-    </ManualStep>,
-
-    // Step 2: Introduction - ManualStep
-    <ManualStep
-      key="intro"
-      triggerNote={nextKey}
-    >
-      <h2 className="text-xl font-semibold">Introduction to Notes</h2>
       <p className="mt-2 text-gray-700">
-        Notes are named A, B, C, D, E, F, G. After G, it loops back to A.
+        In this lesson, we'll explore the names of the white keys: C, D, E, F, G, A, B.
       </p>
-      <p className="mt-2 text-blue-600">Press the highest key to continue.</p>
-    </ManualStep>,
+    </DelayStep>,
 
-    // Step 3: Press a C note - ChordStep for single note
-    <ChordStep
+    // Step 2: Press a C note
+    <SingleNoteStep
       key="pressC"
-      requiredNotes={[]} // Empty array since we're checking any single C note
-      simultaneous={false} // Any single C note
+      triggerNote={Midi.toMidi("C3")} 
+      anyOctave={true}
+      onEnter={() => {
+        console.log('Step 2: Press a C note');
+        highlightC();
+      }}
+      onExit={clearHighlights}
       completeStep={() => {
-        // Feedback handled within the step
+        console.log('C note pressed');
       }}
     >
       <h2 className="text-xl font-semibold">Press a C Note</h2>
-      <p className="mt-2 text-gray-700">Let's look at the note C. I've highlighted all C notes.</p>
-      <p className="mt-2 text-blue-600">Press a C note now.</p>
-    </ChordStep>,
+      <p className="mt-2 text-gray-700">
+        I've highlighted all C notes in your range. Press any C now.
+      </p>
+    </SingleNoteStep>,
 
-    // Step 4: Feedback - TimeStep to display "Good job!"
-    <TimeStep
-      key="goodJob"
-      delay={1000}
+    // Step 3: Play C->E->G in sequence
+    <SequenceStep
+      key="playCtoG"
+      triggerNotes={["C", "E", "G"].map((note) => Midi.toMidi(`${note}3`))}
+      progressTexts={["C", "E", "G"]}
+      ordered={true}
+      anyOctave={true}
+      resetOnMistake={true}
       onEnter={() => {
-        // Optionally do something on enter
+        console.log('Step 3: Play C->E->G in sequence');
+        setHighlightedNotes(getAllNotesOfModRange(firstNote, lastNote, 0).concat(
+          getAllNotesOfModRange(firstNote, lastNote, 4),
+          getAllNotesOfModRange(firstNote, lastNote, 7)
+        ));
       }}
-      onExit={() => {
-        // Cleanup if needed
-      }}
-    >
-      <h2 className="text-xl font-semibold">Good Job!</h2>
-      <p className="mt-2 text-green-600">You've pressed a C note correctly.</p>
-    </TimeStep>,
-
-    // Step 5: Press a D note - ChordStep for single note
-    <ChordStep
-      key="pressD"
-      requiredNotes={[]} // Empty array since we're checking any single D note
-      simultaneous={false} // Any single D note
+      onExit={clearHighlights}
       completeStep={() => {
-        // Feedback handled within the step
+        console.log('C->G sequence complete');
       }}
     >
-      <h2 className="text-xl font-semibold">Press a D Note</h2>
-      <p className="mt-2 text-gray-700">I've highlighted D notes now.</p>
-      <p className="mt-2 text-blue-600">Press a D note now.</p>
-    </ChordStep>,
-
-    // Step 6: Explanation - ManualStep
-    <ManualStep
-      key="explanation"
-      triggerNote={nextKey}
-    >
-      <h2 className="text-xl font-semibold">Understanding Notes</h2>
+      <h2 className="text-xl font-semibold">Play C, E and G in Order</h2>
       <p className="mt-2 text-gray-700">
-        Great! Notes go C, D, E, F, G, A, B, then back to a higher C.
+        Try pressing these 3 notes in ascending order. If you press a wrong note, try again!
       </p>
-      <p className="mt-2 text-blue-600">
-        Experiment with the notes and their notation. When you are ready for an exercise, press the highest key.
-      </p>
-    </ManualStep>,
+    </SequenceStep>,
 
-    // Step 7: Exercise - ExerciseStep with random sequence
-    <ExerciseStep
-      key="exercise"
-      sequence={exerciseSequence}
+    // Step 4: Completion
+    <DelayStep
+      key="completion"
+      delay={2000}
       onEnter={() => {
-        // Optionally display the sequence or provide instructions
-        console.log('Exercise sequence:', exerciseSequence.map(getNoteName).join(', '));
+        console.log('Step 4: Completion');
+        clearHighlights();
       }}
-    >
-      <h2 className="text-xl font-semibold">Exercise Time</h2>
-      <p className="mt-2 text-gray-700">
-        I'll pick 3 random notes. Play them in order. Once done, the lesson ends.
-      </p>
-      <p className="mt-2 text-blue-600">
-        Sequence to play: {exerciseSequence.map(getNoteName).join(' → ')}
-      </p>
-    </ExerciseStep>,
-
-    // Step 8: Completion - ManualStep
-    <ManualStep
-      key="completed"
-      triggerNote={nextKey}
+      onExit={clearHighlights}
+      completeStep={() => {
+        console.log('Lesson Complete');
+      }}
     >
       <h2 className="text-xl font-semibold">Excellent!</h2>
-      <p className="mt-2 text-green-600">You've completed the sequence. Keep exploring and have fun!</p>
-    </ManualStep>,
+      <p className="mt-2 text-green-600">
+        You've completed the sequence. Keep exploring and have fun!
+      </p>
+    </DelayStep>,
+  ], [
+    firstNote,
+    lastNote,
+    clearHighlights,
+    highlightC,
+    highlightD,
   ]);
 
   return (
-      <div className="w-full flex flex-col justify-center mx-auto p-6">
-        <StepSequencer
-          steps={steps}
-          currentIndex={currentIndex}
-          setCurrentIndex={setCurrentIndex}
-        />
-      </div>
+    <div className="w-full flex flex-col justify-center mx-auto p-6">
+      <StepSequencer
+        steps={steps}
+        currentIndex={currentIndex}
+        setCurrentIndex={setCurrentIndex}
+      />
+    </div>
   );
 }

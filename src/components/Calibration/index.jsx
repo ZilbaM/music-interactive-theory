@@ -128,7 +128,7 @@ function Calibration() {
             <p className="text-2xl">
               {
                 countdown == "Good!" ? (
-                  <span className="text-green-500">Good!</span>
+                  <span className="text-green-500">Release!</span>
                 ) : (
                   "Hold ! " + countdown
                 )
