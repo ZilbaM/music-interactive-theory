@@ -3,7 +3,16 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useNotesContext } from "@/components/context/NotesContext";
 import { useCalibrationContext } from "@/components/context/CalibrationContext";
 import BaseStep from "@/components/Step";
+import React, { useCallback, useEffect, useState } from "react";
+import { useNotesContext } from "@/components/context/NotesContext";
+import { useCalibrationContext } from "@/components/context/CalibrationContext";
+import BaseStep from "@/components/Step";
 
+export default function StepSequencer({
+  steps,
+  currentIndex,
+  setCurrentIndex,
+}) {
 export default function StepSequencer({
   steps,
   currentIndex,
@@ -40,7 +49,13 @@ export default function StepSequencer({
   // ]);
 
   // Use a stable callback for completing a step
+  // Use a stable callback for completing a step
   const completeStep = useCallback(() => {
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsTransitioning(false);
+      setCurrentIndex((prevIndex) => Math.min(prevIndex + 1, steps.length - 1));
+    }, 1000);
     setIsTransitioning(true);
     setTimeout(() => {
       setIsTransitioning(false);
@@ -48,6 +63,23 @@ export default function StepSequencer({
     }, 1000);
   }, [setCurrentIndex, steps.length]);
 
+  // Only show the transition step when explicitly completing a step
+  const transitionStep = useCallback(
+    () => (
+      <BaseStep
+        completeStep={() => {
+          console.log("Transition complete");
+        }}
+        onEnter={() => {}}
+        onExit={() => {}}
+      >
+        <p className="text-green-500">Good!</p>
+      </BaseStep>
+    ),
+    []
+  );
+
+  // Trigger onEnter and onExit hooks for each step
   // Only show the transition step when explicitly completing a step
   const transitionStep = useCallback(
     () => (
@@ -73,7 +105,10 @@ export default function StepSequencer({
   }, [currentStep]);
 
   // Clone the current step and inject the `completeStep` function
+  // Clone the current step and inject the `completeStep` function
   const clonedStep = React.cloneElement(currentStep, { completeStep });
+
+  return <>{isTransitioning ? transitionStep() : clonedStep}</>;
 
   return <>{isTransitioning ? transitionStep() : clonedStep}</>;
 }
