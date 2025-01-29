@@ -16,12 +16,6 @@ import {
 } from "@/utils/notes";
 
 // Context providers
-import { useNotesContext } from '@/components/context/NotesContext';
-import { useCalibrationContext } from '@/components/context/CalibrationContext';
-
-// UI Components
-import FlickerText from '@/components/UI/FlickerText';
-import { Midi, Note } from 'tonal';
 import { useNotesContext } from "@/components/context/NotesContext";
 import { useCalibrationContext } from "@/components/context/CalibrationContext";
 
@@ -306,13 +300,6 @@ export default function NoteNotationLessonPage() {
   );
 
   return (
-    <div className="w-full flex flex-col justify-center mx-auto p-6">
-      <StepSequencer
-        steps={steps}
-        currentIndex={currentIndex}
-        setCurrentIndex={setCurrentIndex}
-      />
-    </div>
     <div className="w-full flex flex-col justify-center mx-auto p-6">
       <StepSequencer
         steps={steps}
