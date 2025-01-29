@@ -74,17 +74,20 @@ This project is built using **Next.js** and **React**, with the following key te
   npm install
 ```
 
-3️⃣ Start the development server:
+3️⃣ Copy the .env file and fill the fields with the width and height of your projection surface (physically measure it):
+```bash
+cp .env.example .env.local
+```
+
+4️⃣ Start the development server and open the project in your browser:
 
 ```bash
   npm run dev
-```
-
-4️⃣ Open the project in your browser:
-
-```bash
   http://localhost:3000/
 ```
+
+
+
 
 Click on one of the lessons to start. You will go through a calibration. When you see the virtual keyboard appear, press <kbd>Shift + P</kbd> to toggle the projection mapping edit mode. Drag the 8 corners of the different elements where you need them to be. Press <kbd>Shift + P</kbd> again to turn off the edit mode.
 
