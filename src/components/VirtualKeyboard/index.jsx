@@ -6,12 +6,14 @@ import { useCalibrationContext } from '@/components/context/CalibrationContext';
 
 function VirtualKeyboard() {
 
-  const {activeNotes, highlightedNotes} = useNotesContext();
+  const {activeNotes, highlightedNotes, contentNotes} = useNotesContext();
   const {calibrationData:{firstNote, lastNote}} = useCalibrationContext();
+
 
   const isBlackKey = (note) => [1, 3, 6, 8, 10].includes(note % 12);
   const isActive = (note) => activeNotes.includes(note);
-  const isHighlighted = (note) => highlightedNotes.includes(note);
+  const isHighlighted = (note) => Object.hasOwn(highlightedNotes, note);
+  const hasContent = (note) => Object.hasOwn(contentNotes, note);
 
   const blackNotes = [];
   const whiteNotes = [];
@@ -45,14 +47,16 @@ function VirtualKeyboard() {
             {note >= 0 && (
               <div
                 className={clsx(
-                  "h-[68%] w-full border-2 border-black",
+                  "h-[68%] w-full border-2 border-black overflow-hidden",
                   {
-                    'border-highlightedNotes bg-highlightedNotes': isHighlighted(note),
+                    [highlightedNotes[note]]: note in highlightedNotes,
                     'border-activeNotes bg-activeNotes': isActive(note),
                     'bg-black': !isActive(note) && !isHighlighted(note),
                   }
                 )}
-              ></div>
+              >
+                {hasContent(note) && contentNotes(note)}
+              </div>
             )}
           </div>
         ))}
@@ -67,12 +71,14 @@ function VirtualKeyboard() {
               className={clsx(
                 "h-full w-full border border-black",
                 {
+                  [highlightedNotes[note]]: note in highlightedNotes,
                   '!bg-activeNotes': isActive(note),
-                  'bg-highlightedNotes': isHighlighted(note),
                   'bg-white': !isActive(note) && !isHighlighted(note),
                 }
               )}
-            ></div>
+            >
+              {hasContent(note) && contentNotes(note)}
+            </div>
           </div>
         ))}
       </div>

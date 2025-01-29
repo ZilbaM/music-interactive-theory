@@ -10,8 +10,9 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        highlightedNotes: "#ECDC5F",
+        highlights: "#ECDC5F",
         activeNotes: "#3B86FF",
+        hint: "#7EC4E4",
       },
     },
   },
