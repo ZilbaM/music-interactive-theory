@@ -159,6 +159,7 @@ export default function NoteNotationLessonPage() {
         }}
         onExit={() => {
           clearContent();
+          clearHighlights();
         }}
         triggerNote={lastNote}
         completeStep={() => {}}
@@ -186,9 +187,9 @@ export default function NoteNotationLessonPage() {
       <SingleNoteStep
         key="octaves"
         onEnter={() => {
-          colorOctaves();
           addNoteLetters(["C", "D", "E"]);
           highlightSingleNote(lastNote, " bg-hint");
+          colorOctaves();
           addNextIcon();
         }}
         onExit={() => {
@@ -282,12 +283,10 @@ export default function NoteNotationLessonPage() {
         triggerNote={lastNote}
         onExit={() => {
           clearHighlights()
-          highlightSingleNote(lastNote, " bg-hint");
-          addNextIcon();
           clearContent();
         }}
         completeStep={() => {
-          redirect('/')
+          
         }}
       >
         <h2 className="text-xl font-semibold">Excellent!</h2>
