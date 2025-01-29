@@ -1,12 +1,8 @@
 import { Note } from "tonal";
 
-import { Note } from "tonal";
-
 // utils/notes.js
 export const noteLetters = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-export function getNoteLetter(noteNumber) {
-  return Note.pitchClass(Note.fromMidi(noteNumber));
 export function getNoteLetter(noteNumber) {
   return Note.pitchClass(Note.fromMidi(noteNumber));
 }
@@ -21,8 +17,6 @@ export function getAllNotesOfModRange(firstNote, lastNote, modValue) {
   const noteLetter = noteLetters[modValue];
 
   const notes = [];
-  for (let octave = firstOctave; octave <= lastOctave; octave++) {
-      notes.push(Note.midi(`${noteLetter}${octave}`));
   for (let octave = firstOctave; octave <= lastOctave; octave++) {
       notes.push(Note.midi(`${noteLetter}${octave}`));
   }
