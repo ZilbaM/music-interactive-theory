@@ -13,7 +13,6 @@ function VirtualKeyboard() {
   const isBlackKey = (note) => [1, 3, 6, 8, 10].includes(note % 12);
   const isActive = (note) => activeNotes.includes(note);
   const isHighlighted = (note) => Object.hasOwn(highlightedNotes, note);
-  const hasContent = (note) => Object.hasOwn(contentNotes, note);
 
   const blackNotes = [];
   const whiteNotes = [];
@@ -55,7 +54,7 @@ function VirtualKeyboard() {
                   }
                 )}
               >
-                {hasContent(note) && contentNotes(note)}
+                {contentNotes[note] ?? null}
               </div>
             )}
           </div>
@@ -69,7 +68,7 @@ function VirtualKeyboard() {
           >
             <div
               className={clsx(
-                "h-full w-full border border-black",
+                "h-full w-full border border-black flex flex-col items-center justify-end",
                 {
                   [highlightedNotes[note]]: note in highlightedNotes,
                   '!bg-activeNotes': isActive(note),
@@ -77,7 +76,7 @@ function VirtualKeyboard() {
                 }
               )}
             >
-              {hasContent(note) && contentNotes(note)}
+              {contentNotes[note] ?? null}
             </div>
           </div>
         ))}
