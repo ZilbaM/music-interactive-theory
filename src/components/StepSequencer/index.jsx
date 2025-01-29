@@ -12,32 +12,32 @@ export default function StepSequencer({
   const currentStep = steps[currentIndex];
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  const {
-    calibrationData: { firstNote, lastNote },
-  } = useCalibrationContext();
-  const { activeNotes } = useNotesContext();
+  // const {
+  //   calibrationData: { firstNote, lastNote },
+  // } = useCalibrationContext();
+  // const { activeNotes } = useNotesContext();
 
-  // Handle going back or forward when pressing specific notes
-  useEffect(() => {
-    if (!isTransitioning) {
-      if (activeNotes.includes(firstNote)) {
-        console.log("First note detected, going back");
-        setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
-      } else if (activeNotes.includes(lastNote)) {
-        console.log("Last note detected, going forward");
-        setCurrentIndex((prevIndex) =>
-          Math.min(prevIndex + 1, steps.length - 1)
-        );
-      }
-    }
-  }, [
-    activeNotes,
-    firstNote,
-    lastNote,
-    steps.length,
-    isTransitioning,
-    setCurrentIndex,
-  ]);
+  // // Handle going back or forward when pressing specific notes
+  // useEffect(() => {
+  //   if (!isTransitioning) {
+  //     if (activeNotes.includes(firstNote)) {
+  //       console.log("First note detected, going back");
+  //       setCurrentIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  //     } else if (activeNotes.includes(lastNote)) {
+  //       console.log("Last note detected, going forward");
+  //       setCurrentIndex((prevIndex) =>
+  //         Math.min(prevIndex + 1, steps.length - 1)
+  //       );
+  //     }
+  //   }
+  // }, [
+  //   activeNotes,
+  //   firstNote,
+  //   lastNote,
+  //   steps.length,
+  //   isTransitioning,
+  //   setCurrentIndex,
+  // ]);
 
   // Use a stable callback for completing a step
   const completeStep = useCallback(() => {

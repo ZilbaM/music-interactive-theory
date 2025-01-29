@@ -10,7 +10,7 @@ export default function SubLayout({ children }) {
   return calibrationData ? (
     <div className="h-screen w-screen overflow-hidden flex flex-col items-center justify-between py-16">
       <PerspectiveTransform storageKey="ift-content">
-        <div style={{"aspectRatio" : `${projectionWidth} / ${projectionHeight}`}} className="overflow-hidden">
+        <div style={{"aspectRatio" : `${projectionWidth} / ${projectionHeight}`}} className="w-[30vw]">
           {children}
         </div>
         </PerspectiveTransform>

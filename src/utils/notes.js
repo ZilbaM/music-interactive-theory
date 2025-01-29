@@ -8,8 +8,12 @@ export function getNoteLetter(noteNumber) {
 }
 
 export function getAllNotesOfModRange(firstNote, lastNote, modValue) {
-  const firstOctave = Note.octave(Note.fromMidi(firstNote));
-  const lastOctave = Note.octave(Note.fromMidi(lastNote));
+  let firstOctave = Note.octave(Note.fromMidi(firstNote));
+  let lastOctave = Note.octave(Note.fromMidi(lastNote));
+
+  // if (modValue === firstNote % 12) firstOctave++;
+  // if (modValue === lastNote % 12) lastOctave--;
+
   const noteLetter = noteLetters[modValue];
 
   const notes = [];

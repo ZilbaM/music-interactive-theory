@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import BaseStep from "../";
 import { useNotesContext } from "@/components/context/NotesContext";
 import { isSingleNotePressed } from "../stepHelpers";
+import { useCalibrationContext } from "@/components/context/CalibrationContext";
 
 export default function SingleNoteStep({
   completeStep,
@@ -14,6 +15,9 @@ export default function SingleNoteStep({
 }) {
   const { activeNotes } = useNotesContext();
   const isListening = useRef(false);
+  const {calibrationData} = useCalibrationContext();
+  const firstNote = calibrationData.firstNote ?? 48; // fallback to C2
+  const lastNote = calibrationData.lastNote ?? 72; // fallback to C4
 
   useEffect(() => {
     if (activeNotes.length === 0) {
@@ -27,7 +31,7 @@ export default function SingleNoteStep({
         completeStep();
       }
     }
-  }, [activeNotes, triggerNote, anyOctave, completeStep]);
+  }, [activeNotes, triggerNote, anyOctave, completeStep, firstNote, lastNote]);
 
   return (
     <BaseStep completeStep={completeStep} onEnter={onEnter} onExit={onExit}>

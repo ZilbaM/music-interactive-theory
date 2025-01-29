@@ -7,7 +7,8 @@ const NotesContext = createContext();
 
 export function NotesProvider({ children }) {
   const [activeNotes, setActiveNotes] = useState([]);
-  const [highlightedNotes, setHighlightedNotes] = useState([]);
+  const [highlightedNotes, setHighlightedNotes] = useState({});
+  const [contentNotes, setContentNotes] = useState({});
 
   const {addMidiListener, removeMidiListener, isWebMidiEnabled} = useMIDIContext();
   
@@ -17,6 +18,7 @@ export function NotesProvider({ children }) {
       function handleNoteOn(e) {
         // console.log("Note detected:", e.note.number);
         const note = e.note.number;
+        console.log("Note detected:", note);
         setActiveNotes((prev) => Array.from(new Set([...prev, note])));
       }
       function handleNoteOff(e) {
@@ -37,7 +39,7 @@ export function NotesProvider({ children }) {
 
   return (
     <NotesContext.Provider
-      value={{ activeNotes, setActiveNotes, highlightedNotes, setHighlightedNotes }}
+      value={{ activeNotes, setActiveNotes, highlightedNotes, setHighlightedNotes, contentNotes, setContentNotes }}
     >
       {children}
     </NotesContext.Provider>
