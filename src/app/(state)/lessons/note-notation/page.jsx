@@ -54,22 +54,22 @@ export default function NoteNotationLessonPage() {
     [firstNote, lastNote, setHighlightedNotes]
   );
 
-  const getChroma = (noteLetter) => Note.get(`${noteLetter}3`).chroma;
-  const getChromas = (noteLetters) => noteLetters.map(getChroma);
-
+  
   const highlightSingleNote = useCallback(
     (note, className = " bg-highlights") => {
       const newHighlightValue = {};
       newHighlightValue[note] = className;
       setHighlightedNotes(newHighlightValue);
-
+      
     }, [setHighlightedNotes]
   )
-
+  
   const clearHighlights = useCallback(() => {
     setHighlightedNotes({});
   }, [setHighlightedNotes]);
-
+  
+  const getChroma = (noteLetter) => Note.get(`${noteLetter}3`).chroma;
+  const getChromas = (noteLetters) => noteLetters.map(getChroma);
   const steps = useMemo(
     () => [
       // Step 1: Welcome

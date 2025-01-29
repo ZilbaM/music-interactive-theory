@@ -12,7 +12,7 @@ export default {
         foreground: "var(--foreground)",
         highlights: "#ECDC5F",
         activeNotes: "#3B86FF",
-        hint: "##7EC4E4",
+        hint: "#7EC4E4",
       },
     },
   },
