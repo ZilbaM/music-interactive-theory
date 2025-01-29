@@ -62,7 +62,7 @@ export default function NoteNotationLessonPage() {
         });
       });
 
-      setHighlightedNotes(newHighlightValue);
+      setHighlightedNotes((prev) => {return {...prev, ...newHighlightValue}});
     },
     [firstNote, lastNote, setHighlightedNotes]
   );
@@ -80,7 +80,7 @@ export default function NoteNotationLessonPage() {
           }
         });
 
-        setContentNotes(newContentValue);
+        setContentNotes((prev) => {return {...prev, ...newContentValue}});
       }
     },
     [firstNote, lastNote, setContentNotes]
@@ -89,7 +89,7 @@ export default function NoteNotationLessonPage() {
   const addNextIcon = useCallback(() => {
     const newContentValue = {};
     newContentValue[lastNote] = "→";
-    setContentNotes(newContentValue);
+    setContentNotes((prev) => {return {...prev, ...newContentValue}});
   }, [lastNote, setContentNotes]);
 
   const colorOctaves = useCallback(() => {
@@ -103,7 +103,7 @@ export default function NoteNotationLessonPage() {
         newHighlightValue[Note.midi(`${letter}${octave}`)] = colorClass;
       });
     }
-    setHighlightedNotes(newHighlightValue);
+    setHighlightedNotes((prev) => {return {...prev, ...newHighlightValue}});
   });
 
   const clearContent = useCallback(() => {
