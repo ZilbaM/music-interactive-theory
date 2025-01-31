@@ -60,7 +60,7 @@ function Calibration() {
   function confirmNote(note) {
     if (phase === 1) {
       setLowestNote(note);
-      setMessage("Great! Now press and hold the *highest* key for 3 seconds.");
+      setMessage("Great! Now press and hold the *rightmost* key for 3 seconds.");
       setPhase(2);
       setPendingNote(null);
       setPressedAt(null);
@@ -85,7 +85,7 @@ function Calibration() {
       if (activeNotes.length > 0) {
         setMessage("Good!");
         setTimeout(() => {
-          setMessage("Please press and hold the *lowest* key for 3 seconds.");
+          setMessage("Please press and hold the *leftmost* key for 3 seconds.");
           setPhase(1);
         }, 1000);
       }
